@@ -1,151 +1,121 @@
 [
   {
     "id": "R01",
-    "nombre": "Recolección Prioritaria en Tienda (First-Mile)",
+    "nombre": "Regla de Recolección en Tienda (First-Mile por Volumen)",
     "prioridad": 10,
     "condiciones": [
-      {"variable": "estado_paquete", "operador": "==", "valor": "en_tienda"},
-      {"variable": "urgencia", "operador": "==", "valor": "alta"}
+      {"variable": "estado_paquete", "operador": "==", "valor": "registrado_tienda"},
+      {"variable": "paquetes_en_tienda", "operador": ">=", "valor": 5}
     ],
     "conclusiones": {
-      "prioridad_recoleccion": "Inmediata (Corte Express < 2h)",
-      "flujo_bodega": "Cross-Docking Directo"
+      "accion_recoleccion": "Asignar a Ruta Recolectora Vespertina",
+      "estado_operativo": "Listo para recolección"
     },
-    "explicacion": "Paquetes en tienda con urgencia alta se recolectan en el primer corte disponible y pasan directo al andén de despacho sin almacenarse."
+    "explicacion": "La tienda ha alcanzado o superado el umbral mínimo de 5 paquetes, habilitando su recolección en el turno de la tarde."
   },
   {
     "id": "R02",
-    "nombre": "Recolección Programada en Tienda (First-Mile)",
-    "prioridad": 15,
+    "nombre": "Enrutamiento a Bodega - Zona Occidental (Santa Ana)",
+    "prioridad": 20,
     "condiciones": [
-      {"variable": "estado_paquete", "operador": "==", "valor": "en_tienda"},
-      {"variable": "urgencia", "operador": "!=", "valor": "alta"}
+      {"variable": "zona_destino", "operador": "==", "valor": "occidental"}
     ],
     "conclusiones": {
-      "prioridad_recoleccion": "Ruta Recolectora Vespertina",
-      "flujo_bodega": "Consolidación por Destino"
+      "bodega_destino": "Bodega Santa Ana Centro",
+      "hub_regional": "Occidente"
     },
-    "explicacion": "Paquetes con urgencia media o baja se recogen en la ruta consolidada de cierre de tienda para optimizar la capacidad del transporte recolector."
+    "explicacion": "Paquetes con destino a la zona occidental se concentran y procesan en la bodega de Santa Ana Centro."
   },
   {
     "id": "R03",
-    "nombre": "Clasificación Bodega - Zona Urbana / Local",
-    "prioridad": 20,
+    "nombre": "Enrutamiento a Bodega - Zona Central (San Salvador)",
+    "prioridad": 25,
     "condiciones": [
-      {"variable": "distancia_km", "operador": "<=", "valor": 35}
+      {"variable": "zona_destino", "operador": "==", "valor": "central"}
     ],
     "conclusiones": {
-      "zona_destino": "ZONA-URBANA",
-      "anden_bodega": "Andén A (Jaulas de Reparto Local)"
+      "bodega_destino": "Bodega Central San Salvador",
+      "hub_regional": "Centro"
     },
-    "explicacion": "Destinos a 35 km o menos del CEDIS corresponden al radio urbano y se agrupan en el Andén A."
+    "explicacion": "Paquetes con destino al área metropolitana y departamentos aledaños se procesan en la Bodega Central de San Salvador."
   },
   {
     "id": "R04",
-    "nombre": "Clasificación Bodega - Zona Interdepartamental Media",
-    "prioridad": 25,
+    "nombre": "Enrutamiento a Bodega - Zona Oriental (San Miguel)",
+    "prioridad": 30,
     "condiciones": [
-      {"variable": "distancia_km", "operador": ">", "valor": 35},
-      {"variable": "distancia_km", "operador": "<=", "valor": 100}
+      {"variable": "zona_destino", "operador": "==", "valor": "oriental"}
     ],
     "conclusiones": {
-      "zona_destino": "ZONA-REGIONAL",
-      "anden_bodega": "Andén B (Jaulas de Ruta Departamental)"
+      "bodega_destino": "Bodega San Miguel",
+      "hub_regional": "Oriente"
     },
-    "explicacion": "Destinos entre 36 km y 100 km se agrupan en el Andén B para consolidar carga hacia cabeceras y municipios regionales."
+    "explicacion": "Paquetes con destino a la zona oriental se concentran en la bodega de San Miguel para su distribución local."
   },
   {
     "id": "R05",
-    "nombre": "Clasificación Bodega - Zona Nacional Larga Distancia",
-    "prioridad": 30,
+    "nombre": "Asignación de Flota - Reparto Ligero en Motocicleta",
+    "prioridad": 40,
     "condiciones": [
-      {"variable": "distancia_km", "operador": ">", "valor": 100}
+      {"variable": "peso_kg", "operador": "<=", "valor": 15},
+      {"variable": "volumen_alto", "operador": "==", "valor": false}
     ],
     "conclusiones": {
-      "zona_destino": "ZONA-NACIONAL-LEJANA",
-      "anden_bodega": "Andén C (Plataformas de Ruta Troncal)"
+      "vehiculo_asignado": "Motocicleta",
+      "tipo_reparto": "Urbano Ágil / Documentos y Paquetes Pequeños"
     },
-    "explicacion": "Destinos mayores a 100 km se consolidan en el Andén C para despacho en rutas troncales de larga distancia."
+    "explicacion": "Cargas menores o iguales a 15 kg sin restricciones de volumen se asignan a motocicletas para optimizar tiempos en tráfico."
   },
   {
     "id": "R06",
-    "nombre": "Criterio de Estiba en Jaula por Fragilidad",
-    "prioridad": 40,
+    "nombre": "Asignación de Flota - Reparto Masivo en Pickup con Furgón",
+    "prioridad": 45,
     "condiciones": [
-      {"variable": "fragilidad", "operador": "==", "valor": "alta"}
+      {"variable": "peso_kg", "operador": ">", "valor": 15}
     ],
     "conclusiones": {
-      "ubicacion_jaula": "Nivel Superior (No apilar carga encima)",
-      "manejo_operativo": "Separado de carga pesada"
+      "vehiculo_asignado": "Pickup con Furgón",
+      "tipo_reparto": "Distribución General / Carga Voluminosa o Múltiple"
     },
-    "explicacion": "Dentro de la jaula agrupada por destino, los paquetes de alta fragilidad deben colocarse en el nivel superior para evitar daños por aplastamiento en ruta."
+    "explicacion": "Paquetes mayores a 15 kg o lotes consolidados de ruta requieren la capacidad de carga y protección climática de un pickup con furgón."
   },
   {
     "id": "R07",
-    "nombre": "Protocolo de Custodia por Alto Valor",
-    "prioridad": 45,
+    "nombre": "Programación de Guía de Entrega (Next-Day Delivery)",
+    "prioridad": 50,
     "condiciones": [
-      {"variable": "valor_usd", "operador": ">=", "valor": 1000}
+      {"variable": "momento_ingreso_bodega", "operador": "==", "valor": "tarde_anterior"}
     ],
     "conclusiones": {
-      "seguridad_bodega": "Jaula de Seguridad con Candado en Andén",
-      "requisito_entrega": "Firma y código PIN del destinatario + Monitoreo GPS"
+      "guia_entrega": "Incluir en Guía del Día Siguiente",
+      "ventana_salida": "Mañana (Primer turno de reparto)"
     },
-    "explicacion": "Mercancía valorada en $1,000 USD o más requiere custodia restringida en bodega y validación estricta en la entrega final."
+    "explicacion": "Todo paquete ingresado a bodega durante la tarde anterior se programa obligatoriamente en la guía de entrega del día corriente."
   },
   {
     "id": "R08",
-    "nombre": "Diseño de Ruta: Mensajería Express en Motocicleta",
+    "nombre": "Gestión Financiera - Cobro Contra Entrega (COD)",
     "prioridad": 60,
     "condiciones": [
-      {"variable": "zona_destino", "operador": "==", "valor": "ZONA-URBANA"},
-      {"variable": "flujo_bodega", "operador": "==", "valor": "Cross-Docking Directo"},
-      {"variable": "peso_kg", "operador": "<=", "valor": 15}
+      {"variable": "tipo_pago", "operador": "==", "valor": "contra_entrega"}
     ],
     "conclusiones": {
-      "vehiculo_ruta": "Motocicleta de Reparto",
-      "estrategia_ruta": "Ruta Directa Punto a Punto (Mismo Día)"
+      "proceso_financiero": "Recaudo 100% en efectivo por repartidor",
+      "politica_liquidacion": "Remesa a tienda al día siguiente descontando tarifa de servicio de entrega"
     },
-    "explicacion": "Al haberse clasificado en ZONA-URBANA con Cross-Docking Directo y peso menor a 15 kg, se despacha en motocicleta para sortear tráfico y entregar el mismo día."
+    "explicacion": "Si el producto es contra entrega, la empresa recauda el total en efectivo y liquida a la tienda el día hábil posterior aplicando el descuento por costo de servicio."
   },
   {
     "id": "R09",
-    "nombre": "Diseño de Ruta: Distribución Urbana Consolidada en Panel",
+    "nombre": "Gestión Financiera - Pago Previo entre Tienda y Cliente",
     "prioridad": 65,
     "condiciones": [
-      {"variable": "zona_destino", "operador": "==", "valor": "ZONA-URBANA"},
-      {"variable": "peso_kg", "operador": "<=", "valor": 800}
+      {"variable": "tipo_pago", "operador": "==", "valor": "pagado_tienda"}
     ],
     "conclusiones": {
-      "vehiculo_ruta": "Panel / Furgoneta (1.5 Toneladas)",
-      "estrategia_ruta": "Ruta Circular Multiparada por Colonias (Carga LIFO)"
+      "proceso_financiero": "Entrega sin recaudo de efectivo al cliente",
+      "politica_liquidacion": "Facturación y cobro de tarifa de servicio a la tienda por entrega ejecutada"
     },
-    "explicacion": "Para carga agrupada en ZONA-URBANA que no aplica a moto express, se diseña una ruta circular multiparada en panel organizando la carga en orden inverso a la entrega (LIFO)."
-  },
-  {
-    "id": "R10",
-    "nombre": "Diseño de Ruta: Ruta Departamental en Camión Liviano",
-    "prioridad": 70,
-    "condiciones": [
-      {"variable": "zona_destino", "operador": "==", "valor": "ZONA-REGIONAL"}
-    ],
-    "conclusiones": {
-      "vehiculo_ruta": "Camión Furgón (3.5 Toneladas)",
-      "estrategia_ruta": "Ruta Radial por Municipio (Salida 06:00 AM)"
-    },
-    "explicacion": "Los paquetes agrupados en el Andén B (ZONA-REGIONAL) se consolidan en un camión de 3.5 toneladas con secuencia de entrega radial por municipio."
-  },
-  {
-    "id": "R11",
-    "nombre": "Diseño de Ruta: Ruta Troncal Nacional en Camión Pesado",
-    "prioridad": 75,
-    "condiciones": [
-      {"variable": "zona_destino", "operador": "==", "valor": "ZONA-NACIONAL-LEJANA"}
-    ],
-    "conclusiones": {
-      "vehiculo_ruta": "Camión Rígido (8 Toneladas)",
-      "estrategia_ruta": "Ruta Troncal Nocturna (Tránsito hacia Hub Departamental)"
-    },
-    "explicacion": "Todo el lote agrupado en el Andén C (ZONA-NACIONAL-LEJANA) viaja consolidado en horario nocturno para distribución matutina en el destino lejano."
+    "explicacion": "Si el cliente ya pagó a la tienda, la logística solo ejecuta la entrega física y factura el servicio directamente a la tienda."
   }
 ]
