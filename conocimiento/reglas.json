@@ -1,0 +1,151 @@
+[
+  {
+    "id": "R01",
+    "nombre": "Recolección Prioritaria en Tienda (First-Mile)",
+    "prioridad": 10,
+    "condiciones": [
+      {"variable": "estado_paquete", "operador": "==", "valor": "en_tienda"},
+      {"variable": "urgencia", "operador": "==", "valor": "alta"}
+    ],
+    "conclusiones": {
+      "prioridad_recoleccion": "Inmediata (Corte Express < 2h)",
+      "flujo_bodega": "Cross-Docking Directo"
+    },
+    "explicacion": "Paquetes en tienda con urgencia alta se recolectan en el primer corte disponible y pasan directo al andén de despacho sin almacenarse."
+  },
+  {
+    "id": "R02",
+    "nombre": "Recolección Programada en Tienda (First-Mile)",
+    "prioridad": 15,
+    "condiciones": [
+      {"variable": "estado_paquete", "operador": "==", "valor": "en_tienda"},
+      {"variable": "urgencia", "operador": "!=", "valor": "alta"}
+    ],
+    "conclusiones": {
+      "prioridad_recoleccion": "Ruta Recolectora Vespertina",
+      "flujo_bodega": "Consolidación por Destino"
+    },
+    "explicacion": "Paquetes con urgencia media o baja se recogen en la ruta consolidada de cierre de tienda para optimizar la capacidad del transporte recolector."
+  },
+  {
+    "id": "R03",
+    "nombre": "Clasificación Bodega - Zona Urbana / Local",
+    "prioridad": 20,
+    "condiciones": [
+      {"variable": "distancia_km", "operador": "<=", "valor": 35}
+    ],
+    "conclusiones": {
+      "zona_destino": "ZONA-URBANA",
+      "anden_bodega": "Andén A (Jaulas de Reparto Local)"
+    },
+    "explicacion": "Destinos a 35 km o menos del CEDIS corresponden al radio urbano y se agrupan en el Andén A."
+  },
+  {
+    "id": "R04",
+    "nombre": "Clasificación Bodega - Zona Interdepartamental Media",
+    "prioridad": 25,
+    "condiciones": [
+      {"variable": "distancia_km", "operador": ">", "valor": 35},
+      {"variable": "distancia_km", "operador": "<=", "valor": 100}
+    ],
+    "conclusiones": {
+      "zona_destino": "ZONA-REGIONAL",
+      "anden_bodega": "Andén B (Jaulas de Ruta Departamental)"
+    },
+    "explicacion": "Destinos entre 36 km y 100 km se agrupan en el Andén B para consolidar carga hacia cabeceras y municipios regionales."
+  },
+  {
+    "id": "R05",
+    "nombre": "Clasificación Bodega - Zona Nacional Larga Distancia",
+    "prioridad": 30,
+    "condiciones": [
+      {"variable": "distancia_km", "operador": ">", "valor": 100}
+    ],
+    "conclusiones": {
+      "zona_destino": "ZONA-NACIONAL-LEJANA",
+      "anden_bodega": "Andén C (Plataformas de Ruta Troncal)"
+    },
+    "explicacion": "Destinos mayores a 100 km se consolidan en el Andén C para despacho en rutas troncales de larga distancia."
+  },
+  {
+    "id": "R06",
+    "nombre": "Criterio de Estiba en Jaula por Fragilidad",
+    "prioridad": 40,
+    "condiciones": [
+      {"variable": "fragilidad", "operador": "==", "valor": "alta"}
+    ],
+    "conclusiones": {
+      "ubicacion_jaula": "Nivel Superior (No apilar carga encima)",
+      "manejo_operativo": "Separado de carga pesada"
+    },
+    "explicacion": "Dentro de la jaula agrupada por destino, los paquetes de alta fragilidad deben colocarse en el nivel superior para evitar daños por aplastamiento en ruta."
+  },
+  {
+    "id": "R07",
+    "nombre": "Protocolo de Custodia por Alto Valor",
+    "prioridad": 45,
+    "condiciones": [
+      {"variable": "valor_usd", "operador": ">=", "valor": 1000}
+    ],
+    "conclusiones": {
+      "seguridad_bodega": "Jaula de Seguridad con Candado en Andén",
+      "requisito_entrega": "Firma y código PIN del destinatario + Monitoreo GPS"
+    },
+    "explicacion": "Mercancía valorada en $1,000 USD o más requiere custodia restringida en bodega y validación estricta en la entrega final."
+  },
+  {
+    "id": "R08",
+    "nombre": "Diseño de Ruta: Mensajería Express en Motocicleta",
+    "prioridad": 60,
+    "condiciones": [
+      {"variable": "zona_destino", "operador": "==", "valor": "ZONA-URBANA"},
+      {"variable": "flujo_bodega", "operador": "==", "valor": "Cross-Docking Directo"},
+      {"variable": "peso_kg", "operador": "<=", "valor": 15}
+    ],
+    "conclusiones": {
+      "vehiculo_ruta": "Motocicleta de Reparto",
+      "estrategia_ruta": "Ruta Directa Punto a Punto (Mismo Día)"
+    },
+    "explicacion": "Al haberse clasificado en ZONA-URBANA con Cross-Docking Directo y peso menor a 15 kg, se despacha en motocicleta para sortear tráfico y entregar el mismo día."
+  },
+  {
+    "id": "R09",
+    "nombre": "Diseño de Ruta: Distribución Urbana Consolidada en Panel",
+    "prioridad": 65,
+    "condiciones": [
+      {"variable": "zona_destino", "operador": "==", "valor": "ZONA-URBANA"},
+      {"variable": "peso_kg", "operador": "<=", "valor": 800}
+    ],
+    "conclusiones": {
+      "vehiculo_ruta": "Panel / Furgoneta (1.5 Toneladas)",
+      "estrategia_ruta": "Ruta Circular Multiparada por Colonias (Carga LIFO)"
+    },
+    "explicacion": "Para carga agrupada en ZONA-URBANA que no aplica a moto express, se diseña una ruta circular multiparada en panel organizando la carga en orden inverso a la entrega (LIFO)."
+  },
+  {
+    "id": "R10",
+    "nombre": "Diseño de Ruta: Ruta Departamental en Camión Liviano",
+    "prioridad": 70,
+    "condiciones": [
+      {"variable": "zona_destino", "operador": "==", "valor": "ZONA-REGIONAL"}
+    ],
+    "conclusiones": {
+      "vehiculo_ruta": "Camión Furgón (3.5 Toneladas)",
+      "estrategia_ruta": "Ruta Radial por Municipio (Salida 06:00 AM)"
+    },
+    "explicacion": "Los paquetes agrupados en el Andén B (ZONA-REGIONAL) se consolidan en un camión de 3.5 toneladas con secuencia de entrega radial por municipio."
+  },
+  {
+    "id": "R11",
+    "nombre": "Diseño de Ruta: Ruta Troncal Nacional en Camión Pesado",
+    "prioridad": 75,
+    "condiciones": [
+      {"variable": "zona_destino", "operador": "==", "valor": "ZONA-NACIONAL-LEJANA"}
+    ],
+    "conclusiones": {
+      "vehiculo_ruta": "Camión Rígido (8 Toneladas)",
+      "estrategia_ruta": "Ruta Troncal Nocturna (Tránsito hacia Hub Departamental)"
+    },
+    "explicacion": "Todo el lote agrupado en el Andén C (ZONA-NACIONAL-LEJANA) viaja consolidado en horario nocturno para distribución matutina en el destino lejano."
+  }
+]
