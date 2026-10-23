@@ -33,6 +33,30 @@
 * Logica heuristica: medicion de desviaciones sobre la linea base operativa, identificacion de fases saturadas y recomendacion de redistribucion de recursos basada en patrones historicos.
 
 
+### REGLAS AGREGADAS EN EL PARCIAL
+## Regla 1: Protocolo de Segundo Intento por Ausencia del Cliente
+* SI: estado_entrega == "no_entregado" Y motivo_falla == "cliente_ausente" Y intentos_realizados == 1
+
+* ENTONCES:
+
+* accion_operativa = "Reprogramar para Día Siguiente"
+
+* notificacion_cliente = "Enviar enlace de confirmación de franja horaria"
+
+* Explicación: Si un paquete no pudo entregarse en el primer intento por ausencia del receptor, el sistema lo reprograma * automáticamente para el día siguiente y le notifica al cliente para asegurar su presencia.
+
+## Regla 2: Control de Carga Frágil o Especial
+* SI: maneja_fragil == true O requiere_refrigeracion == true
+
+* ENTONCES:
+
+* etiquetado_especial = "Sello de Manipulación Cuidadosa"
+
+* restriccion_carga = "No apilar / Cargar en sección superior"
+
+* Explicación: Las mercancías frágiles o con requerimientos especiales de conservación reciben marcas distintivas y restricciones de estiba para evitar daños durante el transporte.
+
+
 ### INSTRUCCIONES DE EJECUCION
 
 ## Requisitos:
