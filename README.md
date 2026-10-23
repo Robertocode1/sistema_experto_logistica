@@ -41,8 +41,5 @@
 
 * Ejecutar la aplicacion interactiva:
 
-* python main.py
+* python3 main.py
 
-* Ejecutar la suite de pruebas unitarias:
-
-* python -m unittest discover -s tests

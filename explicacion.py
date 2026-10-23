@@ -8,8 +8,13 @@ class ModuloExplicacion:
         self.traza.clear()
 
     def registrar_paso(self, regla: Dict[str, Any], hechos_evaluados: Dict[str, Any]) -> None:
+        # Soporte flexible: lee "condiciones" o "si"
+        condiciones_regla = regla.get("condiciones") or regla.get("si", [])
+        # Soporte flexible: lee "conclusiones" o "entonces"
+        conclusiones_regla = regla.get("conclusiones") or regla.get("entonces", {})
+
         condiciones_cumplidas = []
-        for cond in regla["condiciones"]:
+        for cond in condiciones_regla:
             var = cond["variable"]
             val_actual = hechos_evaluados.get(var)
             condiciones_cumplidas.append(
@@ -20,7 +25,7 @@ class ModuloExplicacion:
             "regla_id": regla["id"],
             "nombre": regla["nombre"],
             "condiciones_activadas": condiciones_cumplidas,
-            "conclusiones": regla["conclusiones"],
+            "conclusiones": conclusiones_regla,
             "explicacion": regla["explicacion"]
         })
 

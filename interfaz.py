@@ -31,7 +31,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             line-height: 1.5;
             padding: 2rem 1rem;
         }
-        .container { max-width: 1100px; margin: 0 auto; }
+        .container { max-width: 1200px; margin: 0 auto; }
         header {
             margin-bottom: 1.5rem;
             padding-bottom: 1rem;
@@ -109,8 +109,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         .result-item {
             font-size: 0.9rem;
             margin-bottom: 0.3rem;
+            word-break: break-word;
         }
-        .result-item span { color: var(--muted); font-size: 0.8rem; display: inline-block; width: 130px; }
+        .result-item span { color: var(--muted); font-size: 0.8rem; display: inline-block; width: 150px; }
         .result-item strong { color: var(--text); font-weight: 600; }
         
         .trace-box {
@@ -132,83 +133,98 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     </header>
 
     <div class="layout">
-        <!-- COLUMNA IZQUIERDA: PREGUNTAS / VARIABLES DE ENTRADA -->
+        <!-- COLUMNA IZQUIERDA: PARÁMETROS DE ENTRADA -->
         <div class="card">
-            <div class="card-title">📝 Parámetros del Paquete (Preguntas Clave)</div>
+            <div class="card-title">📝 Parámetros del Paquete (Hechos)</div>
             
             <div class="form-group">
-                <label>ID del Paquete</label>
-                <input type="text" id="id_paquete" value="PAQ-105" oninput="evaluarEnTiempoReal()">
+                <label>Estado del Paquete / Tienda</label>
+                <select id="estado_paquete" onchange="evaluarEnTiempoReal()">
+                    <option value="registrado_tienda" selected>Registrado en Tienda</option>
+                    <option value="en_bodega">En Bodega</option>
+                </select>
             </div>
             <div class="form-group">
-                <label>Tienda de Origen (First-Mile)</label>
-                <input type="text" id="tienda_origen" value="Sucursal Metrocentro" oninput="evaluarEnTiempoReal()">
+                <label>Paquetes acumulados en Tienda (First-Mile)</label>
+                <input type="number" id="paquetes_en_tienda" value="6" min="0" oninput="evaluarEnTiempoReal()">
             </div>
             <div class="form-group">
-                <label>Municipio / Destino de Entrega</label>
-                <input type="text" id="destino" value="Santa Ana" oninput="evaluarEnTiempoReal()">
-            </div>
-            <div class="form-group">
-                <label>Distancia desde Bodega Central (km)</label>
-                <input type="number" id="distancia_km" value="65" min="1" oninput="evaluarEnTiempoReal()">
+                <label>Zona de Destino</label>
+                <select id="zona_destino" onchange="evaluarEnTiempoReal()">
+                    <option value="central" selected>Central (San Salvador)</option>
+                    <option value="occidental">Occidental (Santa Ana)</option>
+                    <option value="oriental">Oriental (San Miguel)</option>
+                </select>
             </div>
             <div class="form-group">
                 <label>Peso del Paquete (kg)</label>
-                <input type="number" id="peso_kg" value="25" min="0.1" step="0.5" oninput="evaluarEnTiempoReal()">
+                <input type="number" id="peso_kg" value="12" min="0.1" step="0.5" oninput="evaluarEnTiempoReal()">
             </div>
             <div class="form-group">
-                <label>Nivel de Urgencia</label>
-                <select id="urgencia" onchange="evaluarEnTiempoReal()">
-                    <option value="baja">Baja</option>
-                    <option value="media" selected>Media</option>
-                    <option value="alta">Alta (Express)</option>
+                <label>Tipo de Pago</label>
+                <select id="tipo_pago" onchange="evaluarEnTiempoReal()">
+                    <option value="contra_entrega" selected>Contra Entrega (COD)</option>
+                    <option value="pagado_tienda">Pagado en Tienda</option>
                 </select>
             </div>
             <div class="form-group">
-                <label>Nivel de Fragilidad</label>
-                <select id="fragilidad" onchange="evaluarEnTiempoReal()">
-                    <option value="baja">Baja</option>
-                    <option value="media">Media</option>
-                    <option value="alta" selected>Alta (Frágil)</option>
+                <label>Maneja Carga Frágil (Regla R11)</label>
+                <select id="maneja_fragil" onchange="evaluarEnTiempoReal()">
+                    <option value="true" selected>Sí (Frágil)</option>
+                    <option value="false">No</option>
                 </select>
             </div>
             <div class="form-group">
-                <label>Valor Declarado de la Mercancía ($ USD)</label>
-                <input type="number" id="valor_usd" value="1200" min="1" oninput="evaluarEnTiempoReal()">
+                <label>Estado de Entrega (Regla R10)</label>
+                <select id="estado_entrega" onchange="evaluarEnTiempoReal()">
+                    <option value="entregado">Entregado</option>
+                    <option value="no_entregado" selected>No Entregado (Falla)</option>
+                    <option value="normal">Normal</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Motivo de Falla de Entrega</label>
+                <select id="motivo_falla" onchange="evaluarEnTiempoReal()">
+                    <option value="cliente_ausente" selected>Cliente Ausente</option>
+                    <option value="direccion_incorrecta">Dirección Incorrecta</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Intentos Realizados</label>
+                <input type="number" id="intentos_realizados" value="1" min="0" oninput="evaluarEnTiempoReal()">
             </div>
         </div>
 
-        <!-- COLUMNA DERECHA: RESPUESTAS ORDENADAS EN TIEMPO REAL -->
+        <!-- COLUMNA DERECHA: RESULTADOS DINÁMICOS -->
         <div>
             <div class="card">
-                <div class="card-title">📦 Dictamen Logístico Ordenado</div>
+                <div class="card-title">📦 Dictamen Logístico Inferido</div>
                 
                 <div class="result-section">
-                    <h4>1. Primera Milla (Recolección en Tienda)</h4>
-                    <div class="result-item"><span>Prioridad:</span> <strong id="res_recoleccion">-</strong></div>
-                    <div class="result-item"><span>Flujo en Bodega:</span> <strong id="res_flujo">-</strong></div>
+                    <h4>Asignación Operativa y Bodega</h4>
+                    <div class="result-item"><span>Acción Recolección:</span> <strong id="res_accion_recoleccion">-</strong></div>
+                    <div class="result-item"><span>Bodega Destino:</span> <strong id="res_bodega_destino">-</strong></div>
+                    <div class="result-item"><span>Hub Regional:</span> <strong id="res_hub_regional">-</strong></div>
                 </div>
 
                 <div class="result-section">
-                    <h4>2. Cross-Docking y Organización en Bodega</h4>
-                    <div class="result-item"><span>Zona Logística:</span> <strong id="res_zona">-</strong></div>
-                    <div class="result-item"><span>Andén Asignado:</span> <strong id="res_anden">-</strong></div>
-                    <div class="result-item"><span>Estiba en Jaula:</span> <strong id="res_estiba">-</strong></div>
-                    <div class="result-item"><span>Seguridad/Custodia:</span> <strong id="res_seguridad">-</strong></div>
+                    <h4>Flota y Tipo de Reparto</h4>
+                    <div class="result-item"><span>Vehículo Asignado:</span> <strong id="res_vehiculo_asignado" style="color:var(--primary)">-</strong></div>
+                    <div class="result-item"><span>Tipo Reparto:</span> <strong id="res_tipo_reparto">-</strong></div>
                 </div>
 
                 <div class="result-section">
-                    <h4>3. Última Milla (Diseño de Ruta)</h4>
-                    <div class="result-item"><span>Vehículo Ruta:</span> <strong id="res_vehiculo" style="color:var(--primary)">-</strong></div>
-                    <div class="result-item"><span>Estrategia:</span> <strong id="res_estrategia">-</strong></div>
-                    <div class="result-item"><span>Requisito Entrega:</span> <strong id="res_entrega">-</strong></div>
+                    <h4>Gestión Financiera y Excepciones</h4>
+                    <div class="result-item"><span>Proceso Financiero:</span> <strong id="res_proceso_financiero">-</strong></div>
+                    <div class="result-item"><span>Acción Operativa:</span> <strong id="res_accion_operativa">-</strong></div>
+                    <div class="result-item"><span>Etiquetado Especial:</span> <strong id="res_etiquetado_especial">-</strong></div>
                 </div>
             </div>
 
             <div class="card">
-                <div class="card-title">🔍 Trazabilidad Experta (¿Por qué se decidió?)</div>
+                <div class="card-title">🔍 Trazabilidad Experta (Reglas Disparadas)</div>
                 <div id="contenedor-traza">
-                    <p style="color:var(--muted); font-size:0.85rem;">Modifique cualquier campo a la izquierda para ver las reglas activadas instantáneamente.</p>
+                    <p style="color:var(--muted); font-size:0.85rem;">Modifique los parámetros para ver las reglas activarse en tiempo real.</p>
                 </div>
             </div>
         </div>
@@ -218,15 +234,16 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 <script>
 async function evaluarEnTiempoReal() {
     const payload = {
-        id_paquete: document.getElementById('id_paquete').value,
-        tienda_origen: document.getElementById('tienda_origen').value,
-        destino: document.getElementById('destino').value,
-        estado_paquete: "en_tienda",
-        distancia_km: parseFloat(document.getElementById('distancia_km').value) || 0,
+        estado_paquete: document.getElementById('estado_paquete').value,
+        paquetes_en_tienda: parseInt(document.getElementById('paquetes_en_tienda').value) || 0,
+        zona_destino: document.getElementById('zona_destino').value,
         peso_kg: parseFloat(document.getElementById('peso_kg').value) || 0,
-        urgencia: document.getElementById('urgencia').value,
-        fragilidad: document.getElementById('fragilidad').value,
-        valor_usd: parseFloat(document.getElementById('valor_usd').value) || 0
+        tipo_pago: document.getElementById('tipo_pago').value,
+        maneja_fragil: document.getElementById('maneja_fragil').value === 'true',
+        estado_entrega: document.getElementById('estado_entrega').value,
+        motivo_falla: document.getElementById('motivo_falla').value,
+        intentos_realizados: parseInt(document.getElementById('intentos_realizados').value) || 0,
+        volumen_alto: false
     };
 
     try {
@@ -238,21 +255,20 @@ async function evaluarEnTiempoReal() {
         const data = await res.json();
         const r = data.resultado;
 
-        // Actualizar campos ordenados
-        document.getElementById('res_recoleccion').innerText = r.prioridad_recoleccion || 'Estándar';
-        document.getElementById('res_flujo').innerText = r.flujo_bodega || 'Consolidación por destino';
-        document.getElementById('res_zona').innerText = r.zona_destino || 'ZONA-ESTANDAR';
-        document.getElementById('res_anden').innerText = r.anden_bodega || 'Andén General';
-        document.getElementById('res_estiba').innerText = r.ubicacion_jaula || 'Estiba Estándar';
-        document.getElementById('res_seguridad').innerText = r.seguridad_bodega || 'Custodia Estándar';
-        document.getElementById('res_vehiculo').innerText = r.vehiculo_ruta || 'Panel Estándar';
-        document.getElementById('res_estrategia').innerText = r.estrategia_ruta || 'Ruta Estándar';
-        document.getElementById('res_entrega').innerText = r.requisito_entrega || 'Firma de recibido';
+        // Actualizar interfaz con los valores devueltos por el motor
+        document.getElementById('res_accion_recoleccion').innerText = r.accion_recoleccion || 'Pendiente';
+        document.getElementById('res_bodega_destino').innerText = r.bodega_destino || 'Por definir';
+        document.getElementById('res_hub_regional').innerText = r.hub_regional || 'N/A';
+        document.getElementById('res_vehiculo_asignado').innerText = r.vehiculo_asignado || 'Sin asignar';
+        document.getElementById('res_tipo_reparto').innerText = r.tipo_reparto || 'Estándar';
+        document.getElementById('res_proceso_financiero').innerText = r.proceso_financiero || 'N/A';
+        document.getElementById('res_accion_operativa').innerText = r.accion_operativa || 'Ninguna';
+        document.getElementById('res_etiquetado_especial').innerText = r.etiquetado_especial || 'Estándar';
 
-        // Actualizar trazabilidad paso a paso
+        // Trazabilidad paso a paso
         let trazaHtml = '';
         if (data.traza && data.traza.length > 0) {
-            data.traza.forEach((t, idx) => {
+            data.traza.forEach((t) => {
                 trazaHtml += `
                     <div class="trace-box">
                         <strong>[${t.regla_id}] ${t.name || t.nombre}</strong><br>
@@ -270,7 +286,6 @@ async function evaluarEnTiempoReal() {
     }
 }
 
-// Ejecutar al cargar la página
 window.onload = () => evaluarEnTiempoReal();
 </script>
 </body>

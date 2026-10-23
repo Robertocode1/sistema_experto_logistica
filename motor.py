@@ -48,8 +48,14 @@ class MotorInferencia:
                 if regla_id in reglas_disparadas:
                     continue
 
-                if all(self._evaluar_condicion(c, hechos) for c in regla["condiciones"]):
-                    for clave, valor in regla["conclusiones"].items():
+                # Soporte flexible para "condiciones" (formato antiguo) o "si" (formato nuevo)
+                condiciones_regla = regla.get("condiciones") or regla.get("si", [])
+
+                if all(self._evaluar_condicion(c, hechos) for c in condiciones_regla):
+                    # Soporte flexible para "conclusiones" (antiguo) o "entonces" (nuevo)
+                    conclusiones_regla = regla.get("conclusiones") or regla.get("entonces", {})
+                    
+                    for clave, valor in conclusiones_regla.items():
                         if clave not in hechos:
                             hechos[clave] = valor
 
