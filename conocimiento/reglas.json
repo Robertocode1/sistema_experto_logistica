@@ -117,5 +117,33 @@
       "politica_liquidacion": "Facturación y cobro de tarifa de servicio a la tienda por entrega ejecutada"
     },
     "explicacion": "Si el cliente ya pagó a la tienda, la logística solo ejecuta la entrega física y factura el servicio directamente a la tienda."
+  },
+  {
+    "id": "R10",
+    "nombre": "Protocolo de Segundo Intento por Ausencia del Cliente",
+    "prioridad": 70,
+    "si": [
+      {"variable": "estado_entrega", "operador": "==", "valor": "no_entregado"},
+      {"variable": "motivo_falla", "operador": "==", "valor": "cliente_ausente"},
+      {"variable": "intentos_realizados", "operador": "==", "valor": 1}
+    ],
+    "entonces": {
+      "accion_operativa": "Reprogramar para Día Siguiente",
+      "notificacion_cliente": "Enviar enlace de confirmación de franja horaria"
+    },
+    "explicacion": "Si un paquete no pudo entregarse en el primer intento por ausencia del receptor, el sistema lo reprograma automáticamente para el día siguiente y le notifica al cliente para asegurar su presencia."
+  },
+  {
+    "id": "R11",
+    "nombre": "Control de Carga Frágil o Especial",
+    "prioridad": 75,
+    "si": [
+      {"variable": "maneja_fragil", "operador": "==", "valor": true}
+    ],
+    "entonces": {
+      "etiquetado_especial": "Sello de Manipulación Cuidadosa",
+      "restriccion_carga": "No apilar / Cargar en sección superior"
+    },
+    "explicacion": "Las mercancías frágiles o con requerimientos especiales de conservación reciben marcas distintivas y restricciones de estiba para evitar daños durante el transporte."
   }
 ]
