@@ -1,0 +1,149 @@
+[
+  {
+    "id": "R01",
+    "nombre": "Regla de Recolección en Tienda (First-Mile por Volumen)",
+    "prioridad": 10,
+    "condiciones": [
+      {"variable": "estado_paquete", "operador": "==", "valor": "registrado_tienda"},
+      {"variable": "paquetes_en_tienda", "operador": ">=", "valor": 5}
+    ],
+    "conclusiones": {
+      "accion_recoleccion": "Asignar a Ruta Recolectora Vespertina",
+      "estado_operativo": "Listo para recolección"
+    },
+    "explicacion": "La tienda ha alcanzado o superado el umbral mínimo de 5 paquetes, habilitando su recolección en el turno de la tarde."
+  },
+  {
+    "id": "R02",
+    "nombre": "Enrutamiento a Bodega - Zona Occidental (Santa Ana)",
+    "prioridad": 20,
+    "condiciones": [
+      {"variable": "zona_destino", "operador": "==", "valor": "occidental"}
+    ],
+    "conclusiones": {
+      "bodega_destino": "Bodega Santa Ana Centro",
+      "hub_regional": "Occidente"
+    },
+    "explicacion": "Paquetes con destino a la zona occidental se concentran y procesan en la bodega de Santa Ana Centro."
+  },
+  {
+    "id": "R03",
+    "nombre": "Enrutamiento a Bodega - Zona Central (San Salvador)",
+    "prioridad": 25,
+    "condiciones": [
+      {"variable": "zona_destino", "operador": "==", "valor": "central"}
+    ],
+    "conclusiones": {
+      "bodega_destino": "Bodega Central San Salvador",
+      "hub_regional": "Centro"
+    },
+    "explicacion": "Paquetes con destino al área metropolitana y departamentos aledaños se procesan en la Bodega Central de San Salvador."
+  },
+  {
+    "id": "R04",
+    "nombre": "Enrutamiento a Bodega - Zona Oriental (San Miguel)",
+    "prioridad": 30,
+    "condiciones": [
+      {"variable": "zona_destino", "operador": "==", "valor": "oriental"}
+    ],
+    "conclusiones": {
+      "bodega_destino": "Bodega San Miguel",
+      "hub_regional": "Oriente"
+    },
+    "explicacion": "Paquetes con destino a la zona oriental se concentran en la bodega de San Miguel para su distribución local."
+  },
+  {
+    "id": "R05",
+    "nombre": "Asignación de Flota - Reparto Ligero en Motocicleta",
+    "prioridad": 40,
+    "condiciones": [
+      {"variable": "peso_kg", "operador": "<=", "valor": 15},
+      {"variable": "volumen_alto", "operador": "==", "valor": false}
+    ],
+    "conclusiones": {
+      "vehiculo_asignado": "Motocicleta",
+      "tipo_reparto": "Urbano Ágil / Documentos y Paquetes Pequeños"
+    },
+    "explicacion": "Cargas menores o iguales a 15 kg sin restricciones de volumen se asignan a motocicletas para optimizar tiempos en tráfico."
+  },
+  {
+    "id": "R06",
+    "nombre": "Asignación de Flota - Reparto Masivo en Pickup con Furgón",
+    "prioridad": 45,
+    "condiciones": [
+      {"variable": "peso_kg", "operador": ">", "valor": 15}
+    ],
+    "conclusiones": {
+      "vehiculo_asignado": "Pickup con Furgón",
+      "tipo_reparto": "Distribución General / Carga Voluminosa o Múltiple"
+    },
+    "explicacion": "Paquetes mayores a 15 kg o lotes consolidados de ruta requieren la capacidad de carga y protección climática de un pickup con furgón."
+  },
+  {
+    "id": "R07",
+    "nombre": "Programación de Guía de Entrega (Next-Day Delivery)",
+    "prioridad": 50,
+    "condiciones": [
+      {"variable": "momento_ingreso_bodega", "operador": "==", "valor": "tarde_anterior"}
+    ],
+    "conclusiones": {
+      "guia_entrega": "Incluir en Guía del Día Siguiente",
+      "ventana_salida": "Mañana (Primer turno de reparto)"
+    },
+    "explicacion": "Todo paquete ingresado a bodega durante la tarde anterior se programa obligatoriamente en la guía de entrega del día corriente."
+  },
+  {
+    "id": "R08",
+    "nombre": "Gestión Financiera - Cobro Contra Entrega (COD)",
+    "prioridad": 60,
+    "condiciones": [
+      {"variable": "tipo_pago", "operador": "==", "valor": "contra_entrega"}
+    ],
+    "conclusiones": {
+      "proceso_financiero": "Recaudo 100% en efectivo por repartidor",
+      "politica_liquidacion": "Remesa a tienda al día siguiente descontando tarifa de servicio de entrega"
+    },
+    "explicacion": "Si el producto es contra entrega, la empresa recauda el total en efectivo y liquida a la tienda el día hábil posterior aplicando el descuento por costo de servicio."
+  },
+  {
+    "id": "R09",
+    "nombre": "Gestión Financiera - Pago Previo entre Tienda y Cliente",
+    "prioridad": 65,
+    "condiciones": [
+      {"variable": "tipo_pago", "operador": "==", "valor": "pagado_tienda"}
+    ],
+    "conclusiones": {
+      "proceso_financiero": "Entrega sin recaudo de efectivo al cliente",
+      "politica_liquidacion": "Facturación y cobro de tarifa de servicio a la tienda por entrega ejecutada"
+    },
+    "explicacion": "Si el cliente ya pagó a la tienda, la logística solo ejecuta la entrega física y factura el servicio directamente a la tienda."
+  },
+  {
+    "id": "R10",
+    "nombre": "Protocolo de Segundo Intento por Ausencia del Cliente",
+    "prioridad": 70,
+    "si": [
+      {"variable": "estado_entrega", "operador": "==", "valor": "no_entregado"},
+      {"variable": "motivo_falla", "operador": "==", "valor": "cliente_ausente"},
+      {"variable": "intentos_realizados", "operador": "==", "valor": 1}
+    ],
+    "entonces": {
+      "accion_operativa": "Reprogramar para Día Siguiente",
+      "notificacion_cliente": "Enviar enlace de confirmación de franja horaria"
+    },
+    "explicacion": "Si un paquete no pudo entregarse en el primer intento por ausencia del receptor, el sistema lo reprograma automáticamente para el día siguiente y le notifica al cliente para asegurar su presencia."
+  },
+  {
+    "id": "R11",
+    "nombre": "Control de Carga Frágil o Especial",
+    "prioridad": 75,
+    "si": [
+      {"variable": "maneja_fragil", "operador": "==", "valor": true}
+    ],
+    "entonces": {
+      "etiquetado_especial": "Sello de Manipulación Cuidadosa",
+      "restriccion_carga": "No apilar / Cargar en sección superior"
+    },
+    "explicacion": "Las mercancías frágiles o con requerimientos especiales de conservación reciben marcas distintivas y restricciones de estiba para evitar daños durante el transporte."
+  }
+]
